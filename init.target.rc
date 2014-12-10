@@ -33,8 +33,79 @@ import init.project.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
+    chown system system /sys/kernel/debug/kgsl/proc
 
 on init
+    # BMA250 BOSCH
+    chown system system /sys/class/htc_g_sensor/g_sensor/enable_cir_interrupt
+    chmod 0660 /sys/class/htc_g_sensor/g_sensor/enable_cir_interrupt
+    chown system system /sys/class/htc_g_sensor/g_sensor/en_sig_motion
+    chmod 0660 /sys/class/htc_g_sensor/g_sensor/en_sig_motion
+
+    #htc sensorhub
+    chown system system /sys/class/bma250_powerkey/bma250/clear_powerkey_flag
+    chmod 0664 /sys/class/bma250_powerkey/bma250/clear_powerkey_flag
+    chown system system /dev/cwmcu
+    chmod 0666 /dev/cwmcu
+
+    chown system system sys/class/htc_sensorhub/sensor_hub/enable
+    chown system system sys/class/htc_sensorhub/sensor_hub/delay_ms
+    chown system system sys/class/htc_sensorhub/sensor_hub/barometer_self_test
+    chown system system sys/class/htc_sensorhub/sensor_hub/AP_calibrator_data_accRL
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_en
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_status_acc
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_status_mag
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_status_gyro
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_acc
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_accRL
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_mag
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_gyro
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_light
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_proximity
+    chown system system sys/class/htc_sensorhub/sensor_hub/calibrator_data_barometer
+    chown system system sys/class/htc_sensorhub/sensor_hub/data_barometer
+    chown system system sys/class/htc_sensorhub/sensor_hub/data_proximity
+    chown system system sys/class/htc_sensorhub/sensor_hub/data_proximity_polling
+    chown system system sys/class/htc_sensorhub/sensor_hub/data_light_polling
+    chown system system sys/class/htc_sensorhub/sensor_hub/sensor_hub_rdata
+    chown system system sys/class/htc_sensorhub/sensor_hub/ps_canc
+    chown system system sys/class/htc_sensorhub/sensor_hub/data_light_kadc
+    chown system system sys/class/htc_sensorhub/sensor_hub/firmware_version
+    chown system system sys/class/htc_sensorhub/sensor_hub/uart_debug
+    chown system system sys/class/htc_sensorhub/sensor_hub/boot_mode
+    chown system system sys/class/htc_sensorhub/sensor_hub/ls_mechanism
+    chown system gesture_motion sys/class/htc_sensorhub/sensor_hub/gesture_motion
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/enable
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/delay_ms
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/barometer_self_test
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/AP_calibrator_data_accRL
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_en
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_status_acc
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_status_mag
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_status_gyro
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_acc
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_accRL
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_mag
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_gyro
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_light
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_proximity
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/calibrator_data_barometer
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/data_barometer
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/data_proximity
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/data_proximity_polling
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/data_light_polling
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/sensor_hub_rdata
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/ps_canc
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/data_light_kadc
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/firmware_version
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/uart_debug
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/boot_mode
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/ls_mechanism
+    chmod 0664 sys/class/htc_sensorhub/sensor_hub/gesture_motion
+
+
+    # Mount debugfs first, it's too slow to check not S-ON then mount.
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
     # Set permissions for persist partition
     mkdir /persist 0771 system system
     # See storage config details at http://source.android.com/tech/storage/
@@ -62,8 +133,8 @@ on init
     symlink /storage/ext_sd /sdcard2
     symlink /storage/usb /mnt/usb
 
-    export PATH ${PATH}:/vendor/bin
-    export LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/vendor/lib
+    export PATH ${PATH}:/vendor/bin:/sbin:/system/sbin:/system/bin:/system/xbin
+    export LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/system/lib:/vendor/lib:system/vendor/lib:system/vendor/lib/egl:system/lib/hw/
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -134,10 +205,16 @@ on boot
     # chown system system /sys/class/graphics/fb1/format_3d
 #SSD_HDMI end
 
+    chown system graphics /sys/class/leds/lcd-backlight/cabc_level_ctl
+
     chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
 
     #For bridgemgr daemon to inform the USB driver of the correct transport
     chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
+
+    # For setting tcp delayed ack
+    chown system system /sys/kernel/ipv4/tcp_delack_seg
+    chown system system /sys/kernel/ipv4/tcp_use_userconfig
 
     #To allow interfaces to get v6 address when tethering is enabled
     write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
@@ -239,6 +316,9 @@ on post-fs-data
     mkdir /data/misc/location 0770 gps gps
     mkdir /data/misc/location/mq 0770 gps gps
     mkdir /data/misc/location/xtwifi 0770 gps gps
+    #HTC GPS ++
+    mkdir /data/misc/location/gpsone_d 0770 system gps
+    #HTC GPS --
 
     #Create directory from IMS services
     mkdir /data/shared 0755
@@ -474,7 +554,8 @@ service amp_unload /system/bin/amploader -u
 service p2p_supplicant /system/bin/wpa_supplicant -g@android:wpa_wlan0 \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -puse_multi_chan_concurrent=1 -N \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -dddd \
-    -e/data/misc/wifi/entropy.bin -puse_p2p_group_interface=1
+    -e/data/misc/wifi/entropy.bin -puse_p2p_group_interface=1 \
+    -g@android:wpa_wlan0
     #   we will start as root and wpa_supplicant will switch to user wifi
     #   after setting up the capabilities required for WEXT
     #   user wifi
@@ -484,7 +565,7 @@ service p2p_supplicant /system/bin/wpa_supplicant -g@android:wpa_wlan0 \
     disabled
     oneshot
 
-service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf -puse_p2p_group_interface=1 -e/data/misc/wifi/entropy.bin
+service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf -puse_p2p_group_interface=1 -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
 #   we will start as root and wpa_supplicant will switch to user wifi
 #   after setting up the capabilities required for WEXT
 #   user wifi
@@ -519,10 +600,17 @@ service wifi-crda /system/bin/sh /system/etc/init.crda.sh
    disabled
    oneshot
 
-service ptt_socket_app /system/bin/ptt_socket_app
+service ptt_socket_app /system/bin/ptt_socket_app -d
     class main
-    user system
-    group system
+    user root
+    group root
+    disabled
+    oneshot
+
+service ptt_ffbm /system/bin/ptt_socket_app -f -d
+    user root
+    group root
+    disabled
     oneshot
 
 service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
@@ -846,3 +934,13 @@ service diag_mdlog_stop /system/bin/diag_mdlog -k
     group system qcom_diag sdcard_rw sdcard_r media_rw
     disabled
     oneshot
+
+# Unmount debugfs if SHIP S-ON
+on property:ro.sf=1
+    umount /sys/kernel/debug
+    chmod 0600 /dev/cwmcu
+
+on property:ro.config.low_ram=true
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1

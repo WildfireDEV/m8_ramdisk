@@ -33,6 +33,7 @@ on early-init
     mkdir /vendor 0771 system system
     mkdir /vendor/firmware 0771 system system
     symlink /data/tombstones /tombstones
+    symlink /system/vendor/app /vendor/app
 
 on init
     # Set the property to indicate type of virtual display to 0
@@ -51,23 +52,28 @@ on init
     chown system camera /dev/rawchip0
     chmod 0660 /dev/rawchip0
 
-    # HTC Embedded Log
-    chown root root /devlog
-    chmod 0700 /devlog
-    chown root root /fataldevlog
-    chmod 0700 /fataldevlog
+    # QC2.0 daemon
+    setprop persist.usb.hvdcp.detect "true"
+
 
 # import cne init file
 on post-fs
 #    export LD_PRELOAD /vendor/lib/libNimsWrap.so
-    chmod 700 /fataldevlog
-    chmod 700 /devlog
+    # HTC Embedded Log +++
+    chown root root /devlog
+    chmod 0700 /devlog
+    chown root root /fataldevlog
+    chmod 0700 /fataldevlog
+    # HTC Embedded Log ---
 
 on fs
     wait /dev/block/platform/msm_sdcc.1/by-name/system
     mount ext4 emmc@system /system ro noatime barrier=1
 
     mount_all fstab.qcom
+
+     # zRAM swap (must use after mount_all)
+    #swapon_all /etc/fstab.swap
 
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
@@ -114,7 +120,7 @@ on fs
 
     mkdir /custdata 0771 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/custdata
-    mount ext4 emmc@custdata /custdata nosuid nodev barrier=1
+    mount ext4 emmc@custdata /custdata ro nosuid nodev barrier=1
 
     # Link vendor/lib by QCT original design
     symlink /system/vendor/lib /vendor/lib
@@ -151,16 +157,11 @@ on boot
     chown drm system /dev/htcdrm
     chmod 0660 /dev/htcdrm
 
-# + SSD_RIL : Enlarge TCP window size for ATT HSDPA Cat 14 (Sync from M4ATT)
-    setprop net.tcp.buffersize.lte     524288,1048576,5120000,4096,221184,3461120
-    setprop net.tcp.buffersize.hspap   4096,174760,1572864,4096,225280,1220608
-    setprop net.tcp.buffersize.hspa    4096,174760,1572864,4096,225280,1220608
-    setprop net.tcp.buffersize.hsupa   4096,174760,1572864,4096,225280,1220608
-    setprop net.tcp.buffersize.hsdpa   4096,174760,1572864,4096,225280,1220608
-    setprop net.tcp.buffersize.umts    4096,174760,1572864,4096,225280,1220608
-    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
-# - SSD_RIL : Enlarge TCP window size for ATT HSDPA Cat 14 (Sync from M4ATT)
+
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  1220608
+    write /proc/sys/net/core/wmem_max  1220608
 
 # Allow usb charging to be disabled persistently
 on property:persist.usb.chgdisabled=1
@@ -219,13 +220,14 @@ service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
    group system
    disabled
 
-service security-check1 /sbin/security_boot_check system
-    class core
-    oneshot
+# QCT Enterprise Security feature
+#service security-check1 /sbin/security_boot_check system
+#    class core
+#    oneshot
 
-service security-check2 /sbin/security_boot_check recovery
-    class core
-    oneshot
+#service security-check2 /sbin/security_boot_check recovery
+#    class core
+#    oneshot
 
 service time_daemon /system/bin/time_daemon
    class late_start
@@ -324,6 +326,17 @@ service cir_fw_update /system/bin/cir_fw_update -u cir.img
     oneshot
 # HTC CIR firmware update - END
 
+# HTC Automotive - BEGIN
+service cand /system/bin/cand
+    class main
+    user root
+# HTC Automotive - END
+
+# For DAP to read certificates
+service read_dap_cert /system/bin/readDapCert
+    class main
+    oneshot
+
 # HTC Embedded Log +++
 service htc_ebdlogd /system/bin/htc_ebdlogd -s -k -P 7
     user root
@@ -343,14 +356,3 @@ on property:ro.build.tags=test-keys
 on property:ro.build.tags=release-keys
     start htc_ebdlogd_rel
 # HTC Embedded Log ---
-
-# HTC Automotive - BEGIN
-service cand /system/bin/cand
-    class main
-    user root
-# HTC Automotive - END
-
-# For DAP to read certificates
-service read_dap_cert /system/bin/readDapCert
-    class main
-    oneshot
