@@ -38,55 +38,12 @@ on init
     chown system /sys/power/cpunum_floor
     chown system /sys/power/cpunum_ceiling
     chown system /sys/power/pnpmgr/hotplug/touch_boost
+    chown system /sys/power/pnpmgr/long_duration_touch_boost
     chown root system /sys/module/lowmemorykiller/parameters/adj
     chmod 0664 /sys/module/lowmemorykiller/parameters/adj
     chown root system /sys/module/lowmemorykiller/parameters/minfree
     chmod 0664 /sys/module/lowmemorykiller/parameters/minfree
     chown system /sys/power/wait_for_fb_status
-
-    chown system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chown system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-    chown system /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
-    chown system /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-    chown system /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
-    chown system /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-    chown system /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq
-    chown system /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
-    chown system /proc/sys/vm/dirty_ratio
-    chown system /sys/block/mmcblk0/bdi/read_ahead_kb
-    chown system /sys/class/kgsl/kgsl-3d0/max_gpuclk
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/input_event_min_freq
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/shortcut
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/sync_freq
-    chown system /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-    chown system /sys/power/pnpmgr/battery/charging_enabled
-    chown system /sys/power/pnpmgr/cpufreq/perflock_scaling_max
-    chown system /sys/power/pnpmgr/cpufreq/perflock_scaling_min
-    chown system /sys/power/pnpmgr/hotplug/mp_decision_ms
-    chown system /sys/power/pnpmgr/hotplug/mp_max_cpus
-    chown system /sys/power/pnpmgr/hotplug/mp_min_cpus
-    chown system /sys/power/pnpmgr/hotplug/mp_ns
-    chown system /sys/power/pnpmgr/hotplug/mp_nw
-    chown system /sys/power/pnpmgr/hotplug/mp_spc_enabled
-    chown system /sys/power/pnpmgr/hotplug/mp_sync_enabled
-    chown system /sys/power/pnpmgr/hotplug/mp_ts
-    chown system /sys/power/pnpmgr/hotplug/mp_tw
-    chown system /sys/power/pnpmgr/hotplug/mp_util_high_and
-    chown system /sys/power/pnpmgr/hotplug/mp_util_high_or
-    chown system /sys/power/pnpmgr/hotplug/mp_util_low_and
-    chown system /sys/power/pnpmgr/hotplug/mp_util_low_or
-    chown system /sys/power/pnpmgr/thermal/pause_dt
-    chown system /sys/power/pnpmgr/thermal/thermal_c0
-    chown system /sys/power/pnpmgr/thermal/thermal_c1
-    chown system /sys/power/pnpmgr/thermal/thermal_c2
-    chown system /sys/power/pnpmgr/thermal/thermal_c3
-    chown system /sys/power/pnpmgr/thermal/thermal_final_cpu
-    chown system /sys/power/pnpmgr/thermal/thermal_final_gpu
-    chown system /sys/power/pnpmgr/thermal/thermal_g0
-    chown system /sys/power/pnpmgr/hotplug/cpu_hotplug
 
     write /sys/power/pnpmgr/hotplug/mp_decision_ms 50
     write /sys/power/pnpmgr/hotplug/mp_max_cpus 4
@@ -100,6 +57,8 @@ on init
     write /sys/power/pnpmgr/hotplug/mp_util_low_and "0 30 400 400"
     write /sys/power/pnpmgr/hotplug/mp_util_low_or "0 20 0 0"
     write /sys/power/pnpmgr/apps/activity_trigger "booting"
+
+    write /sys/power/pnpmgr/thermal/cpu_asn 0
 
 # HTC SSD Battery - BEGIN
     chown system system /sys/class/power_supply/battery/full_level_dis_batt_chg
@@ -116,25 +75,38 @@ on init
     chmod 0220 /sys/class/power_supply/battery/disable_limit_chg
 # HTC SSD Battery - END
 
+    chown system system /sys/power/pnpmgr/apps/trace_trigger
+    chmod 0664 /sys/power/pnpmgr/apps/trace_trigger
+
+    chown root system /sys/power/pnpmgr/thermal/cpu_asn
+    chmod 0664 /sys/power/pnpmgr/thermal/cpu_asn
+
 service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     class core
     user root
     disabled
 
-service thermal-engine /system/bin/thermal-engine
+service thermal-engine /system/vendor/bin/thermal-engine
     class main
     user root
+    socket thermal-send-client stream 0666 system system
+    socket thermal-recv-client stream 0660 system system
+    socket thermal-recv-passive-client stream 0666 system system
     group root
 
 service pnpmgr /system/bin/pnpmgr
     class core
-    group system
-    user system
+    user root
 
 service memlock /system/bin/memlock
     class main
     cgroup bg
     user root
+
+#on property:init.svc.bootanim=stopped
+    # Overwrite ActivityManager's low memory killer settings
+    #write /sys/module/lowmemorykiller/parameters/adj "2,4,7,8,9,12"
+    #write /sys/module/lowmemorykiller/parameters/minfree "15360,18432,21504,23040,34576,40720"
 
 on property:init.svc.thermal-engine=stopped
     write /sys/power/pnpmgr/thermal/thermal_final 9999999

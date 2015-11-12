@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# Copyright (c) 2012, The Linux Foundation. All rights reserved.
+# Copyright (c) 2009-2010, Code Aurora Forum. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -8,7 +8,7 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * Neither the name of The Linux Foundation nor
+#     * Neither the name of Code Aurora nor
 #       the names of its contributors may be used to endorse or promote
 #       products derived from this software without specific prior written
 #       permission.
@@ -26,49 +26,18 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-target="$1"
-serial="$2"
-
-# No path is set up at this point so we have to do it here.
-PATH=/sbin:/system/sbin:/system/bin:/system/xbin
-export PATH
-
-
-# **** WARNING *****
-# This runs in a single-threaded, critical path portion
-# of the Android bootup sequence.  This is to guarantee
-# all necessary system partition fixups are done before
-# the rest of the system starts up.  Run any non-
-# timing critical tasks in a separate process to
-# prevent slowdown at boot.
-
-# Run modem link script
-if [ -f /system/etc/init.qcom.modem_links.sh ]; then
-  /system/bin/sh /system/etc/init.qcom.modem_links.sh
-fi
-
-# Run mdm link script
-if [ -f /system/etc/init.qcom.mdm_links.sh ]; then
-  /system/bin/sh /system/etc/init.qcom.mdm_links.sh
-fi
-
-# Run wifi script
-if [ -f /init.qcom.wifi.sh ]; then
-  if [ -f /system/bin/sh ]; then
-    /system/bin/sh /init.qcom.wifi.sh "$target" "$serial"
-  else
-    /system/bin/sh2 /init.qcom.wifi.sh "$target" "$serial"
-  fi
-fi
-
-# Run the sensor script
-if [ -f /system/etc/init.qcom.sensor.sh ]; then
-  /system/bin/sh /system/etc/init.qcom.sensor.sh
-fi
-
-# Run usf script
-if [ -f /system/etc/usf_settings.sh ]; then
-  /system/bin/sh /system/etc/usf_settings.sh
-fi
-
-
+#set diag permissions
+    chown radio.qcom_diag /dev/htc_diag
+    chown radio.qcom_diag /dev/diag
+    chown radio.qcom_diag /dev/diag_mdm
+    chown radio.qcom_diag /dev/htcdiag
+    chown radio.qcom_diag /dev/diag_arm9
+    chown radio.qcom_diag /dev/btdiag
+    chown radio.qcom_diag /dev/diag_qsc
+    chmod 0660 /dev/htc_diag
+    chmod 0660 /dev/diag
+    chmod 0660 /dev/diag_mdm
+    chmod 0660 /dev/htcdiag
+    chmod 0660 /dev/diag_arm9
+    chmod 0660 /dev/btdiag
+    chmod 0660 /dev/diag_qsc

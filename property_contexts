@@ -21,6 +21,7 @@ runtime.                u:object_r:system_prop:s0
 hw.                     u:object_r:system_prop:s0
 sys.                    u:object_r:system_prop:s0
 sys.powerctl            u:object_r:powerctl_prop:s0
+sys.usb.ffs.            u:object_r:ffs_prop:s0
 service.                u:object_r:system_prop:s0
 wlan.                   u:object_r:system_prop:s0
 dhcp.                   u:object_r:dhcp_prop:s0
@@ -41,7 +42,8 @@ persist.service.bdroid. u:object_r:bluetooth_prop:s0
 persist.security.       u:object_r:system_prop:s0
 
 # selinux non-persistent properties
-selinux.                u:object_r:security_prop:s0
+selinux.restorecon_recursive   u:object_r:restorecon_prop:s0
+selinux.                       u:object_r:security_prop:s0
 
 # default property context
 *                       u:object_r:default_prop:s0
@@ -49,6 +51,10 @@ selinux.                u:object_r:security_prop:s0
 # data partition encryption properties
 vold.                   u:object_r:vold_prop:s0
 crypto.                 u:object_r:vold_prop:s0
+
+# ro.build.fingerprint is either set in /system/build.prop, or is
+# set at runtime by system_server.
+build.fingerprint       u:object_r:fingerprint_prop:s0
 
 # ctl properties
 ctl.bootanim            u:object_r:ctl_bootanim_prop:s0
@@ -58,11 +64,102 @@ ctl.mdnsd               u:object_r:ctl_mdnsd_prop:s0
 ctl.ril-daemon          u:object_r:ctl_rildaemon_prop:s0
 ctl.bugreport           u:object_r:ctl_bugreport_prop:s0
 ctl.dhcpcd_bt-pan       u:object_r:ctl_dhcp_pan_prop:s0
+ctl.console             u:object_r:ctl_console_prop:s0
 ctl.                    u:object_r:ctl_default_prop:s0
 
 # NFC properties
 nfc.                    u:object_r:nfc_prop:s0
+
+# These properties are not normally set by processes other than init.
+# They are only distinguished here for setting by qemu-props on the
+# emulator/goldfish.
+config.                 u:object_r:config_prop:s0
+dalvik.                 u:object_r:dalvik_prop:s0
+
+# Used for Fake UI
+sys.under_silent_reset          u:object_r:system_radio_prop:s0
+#line 1 "device/htc/sepolicy/common/property_contexts"
+# property for mm-qcamerad
+htc.camera.                u:object_r:mm-qcamera_prop:s0
+
+#HTC_AUD
+# property for htc audio
+htc.audio.            u:object_r:htc_audio_prop:s0
+persist.htc.audio.    u:object_r:htc_audio_prop:s0
+
+# allow healthd access prop
+oc.cpu_ctrl		   u:object_r:healthd_prop:s0
+
+# property for htc omadm
+cdma.prl                    u:object_r:cdma_prl_prop:s0
+dm.                         u:object_r:htc_omadm_prop:s0
+omadm.                      u:object_r:htc_omadm_prop:s0
+persist.omadm.              u:object_r:htc_omadm_prop:s0
+
+# property for thermal-monitor
+thermal.surface             u:object_r:thermal-monitor_prop:s0
+
+# [framework] begin, Bibby_Lin, 2015/2/24, [ART][low ram] write low ram system property
+# ro.config.htc.low_ram       u:object_r:htc_art_prop:s0
+config.htc.low_ram       u:object_r:htc_art_prop:s0
+# [framework] end, Bibby_Lin
+
+# For pnpmgr
+persist.htc.multicore.      u:object_r:pnpmgr_prop:s0
+display.setfps              u:object_r:pnpmgr_prop:s0
+
+# [Automotive] begin, for HTCMode connectivity feature
+ro.htc.htcmode.socket.type  u:object_r:htcmode_prop:s0
+htc.htcmode.socket.type     u:object_r:htcmode_prop:s0
+htc.htcmode.state           u:object_r:htcmode_prop:s0
+# [Automotive] end
+
+# DOLBY_START
+dolby.                  u:object_r:htc_dolby_prop:s0
+# DOLBY_END
+
+# property for htcphone
+net.gannet0.                u:object_r:htcphone_prop:s0
+
+#HTC_WIFI_START$
+wifi.                       u:object_r:system_prop:s0
+product.wifi.               u:object_r:system_prop:s0
+#HTC_WIFI_END$
+
+#HTC_BT++
+htc.bt.scms-t               u:object_r:bluetooth_prop:s0
+#HTC_BT--
+
 #line 1 "device/qcom/sepolicy/common/property_contexts"
 wc_transport.              u:object_r:bluetooth_prop:s0
-usb_uicc.                  u:object_r:uicc_prop:s0
-htc.camera.                u:object_r:mm-qcamera_prop:s0
+sys.usb_uicc.              u:object_r:uicc_prop:s0
+dolby.audio.               u:object_r:audio_prop:s0
+persist.bluetooth.         u:object_r:bluetooth_prop:s0
+sys.ims.                   u:object_r:qcom_ims_prop:s0
+hw.fm.                     u:object_r:fm_prop:s0
+sys.usf.                   u:object_r:usf_prop:s0
+qc.sdk.us.                 u:object_r:usf_prop:s0
+radio.atfwd.               u:object_r:radio_prop:s0
+ctl.qmuxd                  u:object_r:ctl_qmuxd_prop:s0
+ctl.netmgrd                u:object_r:ctl_netmgrd_prop:s0
+min_freq_0                 u:object_r:freq_prop:s0
+min_freq_4                 u:object_r:freq_prop:s0
+ctl.perfd                  u:object_r:perfd_prop:s0
+ctl.iop                    u:object_r:perfd_prop:s0
+qualcomm.bluetooth.        u:object_r:bluetooth_prop:s0
+ctl.ipacm                  u:object_r:ipacm_prop:s0
+ctl.ipacm-diag             u:object_r:ipacm-diag_prop:s0
+ctl.qti                    u:object_r:qti_prop:s0
+ctl.sensors                u:object_r:sensors_prop:s0
+ctl.msm_irqbalance         u:object_r:msm_irqbalance_prop:s0
+camera.                    u:object_r:camera_prop:s0
+persist.camera.            u:object_r:camera_prop:s0
+sf.lcd_density             u:object_r:sf_lcd_density_prop:s0
+qualcomm.bt.hci_transport  u:object_r:bluetooth_prop:s0
+ctl.mdm_helper             u:object_r:mdm_helper_prop:s0
+ctl.mpdecision             u:object_r:mpdecision_prop:s0
+qualcomm.perf.cores_online u:object_r:mpdecision_prop:s0
+netd.fstman.               u:object_r:netd_prop:s0
+location.                  u:object_r:location_prop:s0
+persist.rmnet.mux          u:object_r:rmnet_mux_prop:s0
+qemu.hw.mainkeys           u:object_r:qemu_hw_mainkeys_prop:s0

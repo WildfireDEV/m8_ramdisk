@@ -245,10 +245,7 @@ esac
 
 case "$target" in
     "msm8974")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_dig
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_mem
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
@@ -313,17 +310,13 @@ case "$target" in
         chmod 664 /sys/devices/system/cpu/cpu1/online
         chmod 664 /sys/devices/system/cpu/cpu2/online
         chmod 664 /sys/devices/system/cpu/cpu3/online
-        echo 1 > /dev/cpuctl/apps/cpu.notify_on_migrate
+        echo 0 > /dev/cpuctl/cpu.notify_on_migrate
     ;;
 esac
 
 case "$target" in
     "msm8226")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        soc_revision=`cat /sys/devices/soc0/revision`
-        if [ "$soc_revision" != "1.0" ]; then
-                echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        fi
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
@@ -365,10 +358,7 @@ esac
 
 case "$target" in
     "msm8610")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_dig
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_mem
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
@@ -504,9 +494,9 @@ if [ -f /data/prebuilt/AdrenoTest.apk ]; then
 fi
 
 # Install SWE_Browser.apk if not already installed
-if [ -f /data/prebuilt/SWE_Browser.apk ]; then
-    if [ ! -d /data/data/org.codeaurora.swe.browser ]; then
-        pm install /data/prebuilt/SWE_Browser.apk
+if [ -f /data/prebuilt/SWE_AndroidBrowser.apk ]; then
+    if [ ! -d /data/data/com.android.swe.browser ]; then
+        pm install /data/prebuilt/SWE_AndroidBrowser.apk
     fi
 fi
 
@@ -517,4 +507,22 @@ case "$target" in
         echo 0,1,2,4,9,12 > /sys/module/lowmemorykiller/parameters/adj
         echo 5120 > /proc/sys/vm/min_free_kbytes
      ;;
+esac
+
+case "$target" in
+    "msm8226" | "msm8974" | "msm8610" | "apq8084" | "mpq8092" | "msm8610")
+        # Let kernel know our image version/variant/crm_version
+        image_version="10:"
+        image_version+=`getprop ro.build.id`
+        image_version+=":"
+        image_version+=`getprop ro.build.version.incremental`
+        image_variant=`getprop ro.product.name`
+        image_variant+="-"
+        image_variant+=`getprop ro.build.type`
+        oem_version=`getprop ro.build.version.codename`
+        echo 10 > /sys/devices/soc0/select_image
+        echo $image_version > /sys/devices/soc0/image_version
+        echo $image_variant > /sys/devices/soc0/image_variant
+        echo $oem_version > /sys/devices/soc0/image_crm_version
+        ;;
 esac

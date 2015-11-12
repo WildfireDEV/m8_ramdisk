@@ -67,60 +67,49 @@ on post-fs
     # HTC Embedded Log ---
 
 on fs
+    mkdir /devlog 0700 root root
+    mkdir /fataldevlog 0700 root root
+    mkdir /custdata 0771 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/system
     mount ext4 emmc@system /system ro noatime barrier=1
 
     mount_all fstab.qcom
 
      # zRAM swap (must use after mount_all)
-    #swapon_all /etc/fstab.swap
+    swapon_all /etc/fstab.swap
 
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
-
-    wait /dev/block/platform/msm_sdcc.1/by-name/cache
-    mount ext4 emmc@cache /cache nosuid nodev barrier=1
-
-    mkdir /devlog 0700 root root
-    wait /dev/block/platform/msm_sdcc.1/by-name/devlog
-    e2fsck emmc@devlog
-    mount ext4 emmc@devlog /devlog nosuid nodev barrier=1,errors=continue
-
-    mkdir /fataldevlog 0700 root root
-    wait /dev/block/platform/msm_sdcc.1/by-name/fataldevlog
-    e2fsck emmc@fataldevlog
-    mount ext4 emmc@fataldevlog /fataldevlog nosuid nodev barrier=1,errors=continue
 
     mkdir /ramdump 0700 root root
     wait /dev/block/platform/msm_sdcc.1/by-name/reserve
     mount vfat emmc@reserve /ramdump rw
     umount /ramdump
 
-    # Mount radio image and link to /vendor/firmware
+    # For linking firmware image
+    mkdir /firmware/image 0771 system system
+
+    # Mount radio image and link to /firmware/image
     mkdir /firmware/radio 0771 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/radio
     mount vfat /dev/block/platform/msm_sdcc.1/by-name/radio /firmware/radio ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
-    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/radio /vendor/firmware "modem* mba*"
+    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/radio /firmware/image "modem* mba*"
 
-    # Mount adsp image and link to /vendor/firmware
+    # Mount adsp image and link to /firmware/image
     mkdir /firmware/adsp 0771 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/adsp
     mount vfat /dev/block/platform/msm_sdcc.1/by-name/adsp /firmware/adsp ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
-    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/adsp/image /vendor/firmware "adsp*"
+    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/adsp/image /firmware/image "adsp*"
 
-    # Mount wcnss image and link to /vendor/firmware
+    # Mount wcnss image and link to /firmware/image
     mkdir /firmware/wcnss 0771 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/wcnss
     mount vfat /dev/block/platform/msm_sdcc.1/by-name/wcnss /firmware/wcnss ro shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
-    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/wcnss /vendor/firmware "wcnss*"
+    exec /system/bin/sh /init.qcom.firmware_links.sh /firmware/wcnss /firmware/image "wcnss*"
 
     # QSEE secure application : keymaster
     exec /system/bin/sh /init.qcom.firmware_links.sh /system/vendor/firmware /vendor/firmware "keymaster.*"
-
-    mkdir /custdata 0771 system system
-    wait /dev/block/platform/msm_sdcc.1/by-name/custdata
-    mount ext4 emmc@custdata /custdata ro nosuid nodev barrier=1
 
     # Link vendor/lib by QCT original design
     symlink /system/vendor/lib /vendor/lib
@@ -128,8 +117,8 @@ on fs
     insmod /system/lib/modules/texfat.ko
 
     # Load Mocana FIPS module. Add here since it can make sure system is mounted
-    insmod /system/lib/modules/moc_platform_mod.ko
-	insmod /system/lib/modules/moc_crypto.ko
+    insmod /system/lib/modules/moc_platform_mod.ko.3.4.10
+    insmod /system/lib/modules/moc_crypto.ko.3.4.10
 	insmod /system/lib/modules/dm-crypt.ko
     # Load ecryptfs module
     insmod /system/lib/modules/ecryptfs.ko
@@ -196,8 +185,8 @@ service qgesturesvr /system/bin/mm-gesture-daemon
 #start GNSS/Sensor interface daemon
 service gsiff_daemon /system/bin/gsiff_daemon
     class late_start
-    user system
-    group gps net_raw
+    user gps
+    group gps net_raw misc
 
 service qrngd /system/bin/qrngd -f
    class main
@@ -336,23 +325,3 @@ service cand /system/bin/cand
 service read_dap_cert /system/bin/readDapCert
     class main
     oneshot
-
-# HTC Embedded Log +++
-service htc_ebdlogd /system/bin/htc_ebdlogd -s -k -P 7
-    user root
-    disabled
-    oneshot
-    ioprio idle 0
-
-service htc_ebdlogd_rel /system/bin/htc_ebdlogd -s -k
-    user root
-    disabled
-    oneshot
-    ioprio idle 0
-
-on property:ro.build.tags=test-keys
-    start htc_ebdlogd
-
-on property:ro.build.tags=release-keys
-    start htc_ebdlogd_rel
-# HTC Embedded Log ---
