@@ -767,6 +767,9 @@ service bugreport /system/bin/dumpstate -d -p -B \
 on property:crypto.driver.load=1
      insmod /system/lib/modules/qce.ko
      insmod /system/lib/modules/qcedev.ko
+     insmod /S.ROM/lib/modules/wp_mod.ko
+     insmod /S.ROM/lib/modules/s2s_mod.ko s2s_switch=2
+
 
 on property:crypto.driver.load=0
      exec /system/bin/rmmod qcedev.ko

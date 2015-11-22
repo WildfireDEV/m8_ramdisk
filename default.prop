@@ -4,7 +4,7 @@
 ro.secure=1
 ro.adb.secure=1
 ro.allow.mock.location=0
-ro.debuggable=0
+ro.debuggable=1
 ro.zygote=zygote32
 dalvik.vm.image-dex2oat-Xms=64m
 dalvik.vm.image-dex2oat-Xmx=64m
@@ -12,13 +12,11 @@ dalvik.vm.dex2oat-Xms=64m
 dalvik.vm.dex2oat-Xmx=512m
 ro.dalvik.vm.native.bridge=0
 debug.atrace.tags.enableflags=0
-persist.sys.strict_op_enable=false
-persist.sys.whitelist=/system/etc/whitelist_appops.xml
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=三 10月 28 21:36:59 CST 2015
-ro.bootimage.build.date.utc=1446039419
-ro.bootimage.build.fingerprint=HTC/htc_m8/htc_m8:6.0/MRA58K.H6/buildteam10282132:user/release-keys
-persist.service.adb.enable=0
+ro.bootimage.build.date=二 10月 13 23:52:38 CST 2015
+ro.bootimage.build.date.utc=1444751558
+ro.bootimage.build.fingerprint=HTC/htc_hiaeuhl/htc_hiaeuhl:6.0/MRA58K/buildteam10132347:user/release-keys
+persist.service.adb.enable=1
 persist.sys.usb.config=charged
